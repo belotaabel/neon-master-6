@@ -576,7 +576,7 @@ export default function Index() {
     gameSocket.current = socket;
     const applySelectionResponse = (response: { ok: boolean; message?: string; playerBalance?: number; mainBalance?: number }) => {
       if (!response.ok) {
-        setNotice(response.message || "የካርድ ምርጫውን ማስቀመጥ አልተቻለም።");
+        setNotice(response.message === "Insufficient balance" ? "ቀሪ ባላንስዎ በቂ አይደለም።" : response.message || "የካርድ ምርጫውን ማስቀመጥ አልተቻለም።");
         return;
       }
       if (response.playerBalance === undefined || response.mainBalance === undefined) return;
@@ -619,7 +619,7 @@ export default function Index() {
     if (!user || !selectionLoaded.current || !socket?.connected) return;
     socket.emit("game:selection", { playerId: user.id, cardNumbers: selected, gameType }, (response: { ok: boolean; message?: string; playerBalance?: number; mainBalance?: number }) => {
       if (!response.ok) {
-        setNotice(response.message || "የካርድ ምርጫውን ማስቀመጥ አልተቻለም።");
+        setNotice(response.message === "Insufficient balance" ? "ቀሪ ባላንስዎ በቂ አይደለም።" : response.message || "የካርድ ምርጫውን ማስቀመጥ አልተቻለም።");
         return;
       }
       if (response.playerBalance === undefined || response.mainBalance === undefined) return;
@@ -644,6 +644,10 @@ export default function Index() {
     if (selectionLocked || occupiedCardIds.has(id)) return;
     const wasSelected = selected.includes(id);
     if (!wasSelected && selected.length >= 2) return;
+    if (!wasSelected && Number(user?.player_balance ?? 0) + Number(user?.main_balance ?? 0) < 10) {
+      setNotice("ቀሪ ባላንስዎ በቂ አይደለም።");
+      return;
+    }
     const cardDelta = wasSelected ? -1 : 1;
     setSelected((old) => wasSelected ? old.filter((x) => x !== id) : [...old, id]);
     setCurrentCardCount((count) => Math.max(0, count + cardDelta));
