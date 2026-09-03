@@ -125,8 +125,8 @@ export const handleAdminBotSettings: RequestHandler = async (req, res) => {
 
 export const handleAdminBotSettingsUpdate: RequestHandler = async (req, res) => {
   if (!requireAdmin(req, res)) return;
-  if (typeof req.body?.enabled !== "boolean" || !Number.isInteger(req.body?.botCount) || req.body.botCount < 0 || req.body.botCount > 50) {
-    res.status(400).json({ error: "Bot settings require a boolean enabled value and a count from 0 to 50" });
+  if (typeof req.body?.enabled !== "boolean" || !Number.isInteger(req.body?.botCount) || req.body.botCount < 0 || req.body.botCount > 200) {
+    res.status(400).json({ error: "Bot settings require a boolean enabled value and a count from 0 to 200" });
     return;
   }
   try {

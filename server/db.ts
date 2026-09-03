@@ -601,7 +601,7 @@ export async function persistSelectedCards(gameId: string, userId: number, cardN
       const refund = removedCards.length * 10;
       const playerBalance = Number(balance.rows[0]?.player_balance ?? 0);
       const mainBalance = Number(balance.rows[0]?.main_balance ?? 0);
-      if (!balance.rowCount || playerBalance + mainBalance + refund < total) throw new Error("Insufficient balance");
+      if (!balance.rowCount || (newCards.length > 0 && playerBalance + mainBalance < total)) throw new Error("Insufficient balance");
       const playerDebit = Math.min(playerBalance + refund, total);
       const mainDebit = total - playerDebit;
       await client.query(

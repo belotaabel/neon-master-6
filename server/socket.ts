@@ -117,7 +117,7 @@ export function registerGameSockets(io: Server, serviceMode: GameType = "75") {
   }, 2500);
   const botTimer = setInterval(() => {
     void advanceBots(serviceMode);
-  }, 300);
+  }, 100);
 
   io.use((socket, next) => {
     if (isSimulationSocketData(socket.data)) return next();
@@ -176,7 +176,7 @@ export function registerGameSockets(io: Server, serviceMode: GameType = "75") {
       selectionQueue = selectionQueue.then(() => syncSelection(payload, acknowledge));
     };
 
-    socket.on("game:join", (payload: { playerId?: string | number; cardNumbers?: number[] }, acknowledge) => {
+    socket.on("game:join", (payload: { playerId?: string | number; cardNumbers?: number[]; allowEmpty?: boolean }, acknowledge) => {
       queueSelection(payload, acknowledge);
     });
     socket.on("game:selection", (payload: { playerId?: string | number; cardNumbers?: number[] }, acknowledge) => {
@@ -198,6 +198,7 @@ export function registerGameSockets(io: Server, serviceMode: GameType = "75") {
           await persistSelectedCards(gameId, playerId, []);
           const updatedGame = await getActiveGame();
           io.to(room).emit("cards:occupied", updatedGame.occupiedCardNumbers);
+          await broadcastState(gameType);
         }
         await socket.leave(room);
       }).catch((error) => console.error("Unable to release bingo cards", error));
