@@ -44,6 +44,7 @@ export function registerGameSockets(io: Server, serviceMode: GameType = "75") {
   const activeGames = new Map<GameType, string>();
   const tickInProgress = new Set<GameType>();
   const botTickInProgress = new Set<GameType>();
+  const botTickPending = new Set<GameType>();
 
   const roomFor = (gameType: GameType, gameId: string) => `game:${gameType}:${gameId}`;
 
@@ -62,20 +63,27 @@ export function registerGameSockets(io: Server, serviceMode: GameType = "75") {
   };
 
   const advanceBots = async (gameType: GameType) => {
-    if (botTickInProgress.has(gameType)) return;
+    if (botTickInProgress.has(gameType)) {
+      botTickPending.add(gameType);
+      return;
+    }
     botTickInProgress.add(gameType);
     try {
-      const liveGame = await getActiveGame();
-      if (liveGame.status !== "selecting") return;
-      const addedBot = await ensureBotsForSelectingGame(String(liveGame.id));
-      if (addedBot > 0) {
-        activeGames.set(gameType, String(liveGame.id));
-        await broadcastState(gameType);
-      }
+      do {
+        botTickPending.delete(gameType);
+        const liveGame = await getActiveGame();
+        if (liveGame.status !== "selecting") break;
+        const addedBot = await ensureBotsForSelectingGame(String(liveGame.id));
+        if (addedBot > 0) {
+          activeGames.set(gameType, String(liveGame.id));
+          await broadcastState(gameType);
+        }
+      } while (botTickPending.has(gameType));
     } catch (error) {
       console.error(`Unable to coordinate ${gameType} bingo bots`, error);
     } finally {
       botTickInProgress.delete(gameType);
+      botTickPending.delete(gameType);
     }
   };
 
