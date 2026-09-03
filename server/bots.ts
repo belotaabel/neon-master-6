@@ -4,8 +4,8 @@ import { BOT_ROSTER } from "@shared/api";
 import { BOT_DEFAULT_BALANCE, BOT_TELEGRAM_ID_BASE, CARD_SELECTION_LOCKED_ERROR, db, getBotSettings, persistSelectedCards } from "./db";
 
 const CARD_PRICE = 10;
-const BOT_SELECTION_MIN_DELAY_MS = 450;
-const BOT_SELECTION_MAX_DELAY_MS = 650;
+const BOT_SELECTION_MIN_DELAY_MS = 100;
+const BOT_SELECTION_MAX_DELAY_MS = 150;
 
 export { BOT_ROSTER };
 

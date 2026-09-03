@@ -117,7 +117,7 @@ export function registerGameSockets(io: Server, serviceMode: GameType = "75") {
   }, 2500);
   const botTimer = setInterval(() => {
     void advanceBots(serviceMode);
-  }, 300);
+  }, 100);
 
   io.use((socket, next) => {
     if (isSimulationSocketData(socket.data)) return next();

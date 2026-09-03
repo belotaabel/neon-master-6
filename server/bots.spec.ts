@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { BOT_ROSTER, chooseBotCards, ensureBotsForSelectingGame } from "./bots";
 
 describe("production bot roster", () => {
-  it("contains exactly 50 unique configured names", () => {
-    expect(BOT_ROSTER).toHaveLength(50);
-    expect(new Set(BOT_ROSTER).size).toBe(50);
+  it("contains the supplied roster in order", () => {
+    expect(BOT_ROSTER).toHaveLength(207);
+    expect(BOT_ROSTER.slice(0, 5)).toEqual(["Abel", "Nati_21", "Yoni", "Dagi_99", "Elias_7"]);
+    expect(BOT_ROSTER[BOT_ROSTER.length - 1]).toBe("Sintayehu");
+    expect(new Set(BOT_ROSTER).size).toBeLessThan(BOT_ROSTER.length);
   });
 
   it("chooses one or two distinct available cards", () => {

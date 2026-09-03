@@ -3,6 +3,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const originalEnv = { ...process.env };
 
+vi.mock("./db", async () => {
+  const actual = await vi.importActual<typeof import("./db")>("./db");
+  return { ...actual, updateBotSettings: vi.fn(async (enabled: boolean, botCount: number) => ({ enabled, botCount })) };
+});
+
 afterEach(() => {
   process.env = { ...originalEnv };
   vi.resetModules();
@@ -35,11 +40,19 @@ describe("bot settings admin boundary", () => {
     expect(response.statusCode).toBe(403);
   });
 
+  it("accepts the maximum bot count", async () => {
+    const { handleAdminBotSettingsUpdate } = await import("./routes/admin");
+    const token = adminToken();
+    const response = responseFor();
+    await handleAdminBotSettingsUpdate({ body: { enabled: true, botCount: 200 }, header: (name: string) => name === "x-admin-token" ? token : undefined } as never, response as never, () => undefined);
+    expect(response.statusCode).toBe(200);
+  });
+
   it("rejects counts outside the fixed roster limit", async () => {
     const { handleAdminBotSettingsUpdate } = await import("./routes/admin");
     const token = adminToken();
     const response = responseFor();
-    await handleAdminBotSettingsUpdate({ body: { enabled: true, botCount: 51 }, header: (name: string) => name === "x-admin-token" ? token : undefined } as never, response as never, () => undefined);
+    await handleAdminBotSettingsUpdate({ body: { enabled: true, botCount: 201 }, header: (name: string) => name === "x-admin-token" ? token : undefined } as never, response as never, () => undefined);
     expect(response.statusCode).toBe(400);
   });
 
