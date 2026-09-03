@@ -784,8 +784,8 @@ export default function Index() {
           <div className="stat purple">
             <Users />
             <span>
-              <small>የአሁኑ ጨዋታ ፕሌየርስ</small>
-            <b>{game?.playerCount ?? 0}</b>
+              <small>የአሁኑ ጨዋታ ካርዶች</small>
+              <b>{game?.cardCount ?? 0}</b>
             </span>
           </div>
           <div className="stat blue">
