@@ -170,7 +170,7 @@ async function runBotCoordinator(gameId: string) {
        WHERE gc.game_id = $1 AND u.is_bot = TRUE`,
       [gameId],
     );
-    const assignments = planBotAssignments(existing.rows.map((row) => row.bot_key), await availableCards(client, gameId), settings.botCount);
+    const assignments = planBotAssignments(existing.rows.map((row) => row.bot_key), await availableCards(client, gameId), settings.botCount).slice(0, 1);
     if (!assignments.length || selectionExpired()) {
       await client.query("COMMIT");
       return 0;
