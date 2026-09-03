@@ -584,9 +584,7 @@ export default function Index() {
     };
     socket.on("connect", () => {
       setNotice("");
-      if (selectedRef.current.length) {
-        socket.emit("game:join", { playerId: user.id, cardNumbers: selectedRef.current, gameType }, applySelectionResponse);
-      }
+      socket.emit("game:join", { playerId: user.id, cardNumbers: selectedRef.current, gameType, allowEmpty: true }, applySelectionResponse);
     });
     socket.on("connect_error", () => setNotice("የጨዋታ ሰርቨር አይገናኝም።"));
     socket.on("game:error", (e: { message?: string }) =>
@@ -594,7 +592,7 @@ export default function Index() {
     );
     socket.on("cards:occupied", (cardNumbers: unknown) => {
       if (!Array.isArray(cardNumbers)) return;
-      setOccupiedCardIds(new Set(cardNumbers.filter((id): id is number => Number.isInteger(id) && id >= 1 && id <= 400)));
+      setOccupiedCardIds(new Set(cardNumbers.filter((id): id is number => Number.isInteger(id) && id >= 1 && id <= 400 && !selectedRef.current.includes(id))));
     });
     socket.on("game:announcement", ({ message }: { message?: string }) => setNotice(message || "Game started"));
     socket.on("game:state", (state: GameState) => {
