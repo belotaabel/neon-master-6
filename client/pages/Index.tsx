@@ -359,6 +359,7 @@ export default function Index() {
   const activeAudio = useRef<HTMLAudioElement | null>(null);
   const lastAudioBall = useRef<number | null>(null);
   const [game, setGame] = useState<GameState | null>(null);
+  const [winnerAnnouncement, setWinnerAnnouncement] = useState<GameState | null>(null);
   const [currentCardCount, setCurrentCardCount] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [selectionEndsAt, setSelectionEndsAt] = useState<string | null>(null);
@@ -598,6 +599,9 @@ export default function Index() {
     socket.on("game:announcement", ({ message }: { message?: string }) => setNotice(message || "Game started"));
     socket.on("game:state", (state: GameState) => {
       setGame(state);
+      if (state.winners.length > 0) {
+        setWinnerAnnouncement((current) => current?.gameId === state.gameId ? current : state);
+      }
       setCurrentCardCount(state.cardCount);
       setOccupiedCardIds(new Set(state.occupiedCardNumbers.filter((id) => Number.isInteger(id) && id >= 1 && id <= 400 && !selectedRef.current.includes(id))));
       setBotCardIds(new Set(state.botCardNumbers.filter((id) => Number.isInteger(id) && id >= 1 && id <= 400)));
@@ -685,13 +689,13 @@ export default function Index() {
     }, 15000);
     return () => window.clearTimeout(timer);
   }, [finalizing, game?.gameId]);
-  const winners = game?.winners ?? [];
-  const winner = winners.length > 0;
+  const winners = winnerAnnouncement?.winners ?? [];
   const winnerCardIds = winners.map((winner) => winner.cardNumber);
   const winnerCardId = winnerCardIds[0] ?? null;
   useEffect(() => {
-    if (!winner || !playing) return;
+    if (!winnerAnnouncement) return;
     const resetTimer = window.setTimeout(() => {
+      setWinnerAnnouncement(null);
       setPlaying(false);
       setScreen("selection");
       setGame(null);
@@ -706,7 +710,7 @@ export default function Index() {
       setNotice("");
     }, 8000);
     return () => window.clearTimeout(resetTimer);
-  }, [winner, playing]);
+  }, [winnerAnnouncement]);
   const winningRows = winningLines(cardForId(winnerCardId ?? -1));
   if (screen === "landing")
     return (
@@ -842,14 +846,14 @@ export default function Index() {
             );
           })}
         </section>
-        {winner && (
+        {winnerAnnouncement && (
           <>
             <div className="winner-modal" role="status">
               <div className="winner-badge">BINGO!</div>
               <h2>እንኳን ደስ አለዎት</h2>
               <div className="winner-details">
                 <p>አሸናፊ: <b>{winners.map((item) => item.displayName).join(", ")}</b></p>
-                <p>የሽልማቱ መጠን: <b>{((game?.prizeAmount ?? 0) / winners.length).toFixed(2)} ብር</b></p>
+                <p>የሽልማቱ መጠን: <b>{((winnerAnnouncement.prizeAmount ?? 0) / winners.length).toFixed(2)} ብር</b></p>
                 <p>የካርድ ቁጥር: <b>#{winnerCardIds.map((id) => id > 400 ? id - 400 : id).join(", #")}</b></p>
               </div>
               <div className="winner-card-preview">
